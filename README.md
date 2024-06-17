@@ -1,4 +1,4 @@
-# ADX to WAV and WAV to ADX Converter
+# ADX C# Library
 
 This repository contains a C# library for converting ADX audio files to WAV format and vice versa. The original code was written in C and has been translated into C# compatible with the .NET Framework 3.5. The code includes additional logic to handle full file looping when converting from WAV to ADX format.
 
