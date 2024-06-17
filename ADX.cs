@@ -48,22 +48,19 @@ namespace ADX
         /// Example of usage:
         /// <code>
         /// string AdxFilePath = "myADXFilePath.adx";
-        /// string WavFilePath = "myADXFilePath.adx";
-        /// byte[] wavData = ToWav(AdxFilePath);
-        /// using (FileStream fs = new FileStream())
-        /// using (BinaryWriter writer = new BinaryWriter(fs))
-        /// {
-        ///     writer.Write(wavData)
-        /// }
+        /// string WavFilePath = "myWAVFilePath.adx";
+        /// byte[] adxData = File.ReadAllBytes(AdxFilePath);
+        /// byte[] wavData = ToWav(adxData);
+        /// File.WriteAllBytes(WavFilePath, wavData);
         /// </code>
         /// </example>
         /// </summary>
-        /// <param name="adxFilePath">The adx file source path to convert.</param>
+        /// <param name="adxData">The adx file byte array to convert.</param>
         /// <returns>A byte Array containing the wav data</returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public static byte[] ToWav(string adxFilePath)
+        public static byte[] ToWav(byte[] adxData)
         {
-            using (FileStream adxStream = new FileStream(adxFilePath, FileMode.Open, FileAccess.Read))
+            using (MemoryStream adxStream = new MemoryStream(adxData))
             using (BinaryReader adxReader = new BinaryReader(adxStream))
             using (MemoryStream wavStream = new MemoryStream())
             using (BinaryWriter wavWriter = new BinaryWriter(wavStream))
@@ -132,25 +129,21 @@ namespace ADX
         /// <example>
         /// Example of usage:
         /// <code>
-        /// string WavFilePath = "myADXFilePath.adx";
+        /// string WavFilePath = "myWAVFilePath.adx";
         /// string AdxFilePath = "myADXFilePath.adx";
-        /// byte[] adxData = FromWav(WavFilePath);
-        /// using (FileStream fs = new FileStream())
-        /// using (BinaryWriter writer = new BinaryWriter(fs))
-        /// {
-        ///     writer.Write(adxData)
-        /// }
+        /// byte[] wavData = File.ReadAllBytes(WavFilePath);
+        /// byte[] adxData = FromWav(wavData);
         /// File.WriteAllBytes(AdxFilePath, adxData);
         /// </code>
         /// </example>
         /// </summary>
-        /// <param name="wavFilePath"></param>
-        /// <param name="loop"></param>
+        /// <param name="wavData">The wav file byte array to convert.</param>
+        /// <param name="loop">If you need your whole file to loop.</param>
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
-        public static byte[] FromWav(string wavFilePath, bool loop)
+        public static byte[] FromWav(byte[] wavData, bool loop)
         {
-            using (FileStream wavStream = new FileStream(wavFilePath, FileMode.Open, FileAccess.Read))
+            using (MemoryStream wavStream = new MemoryStream(wavData))
             using (BinaryReader wavReader = new BinaryReader(wavStream))
             using (MemoryStream adxStream = new MemoryStream())
             using (BinaryWriter adxWriter = new BinaryWriter(adxStream))
@@ -258,17 +251,15 @@ namespace ADX
             adxhdr[19] = ADX_FLAGS;
             if (loop)
             {
+                offset = LOOP_START_OFFSET - 4;
                 Utils.WriteWordBE(adxhdr, 20, 0);
                 Utils.WriteWordBE(adxhdr, 22, 1);
                 Utils.WriteDwordBE(adxhdr, 24, 1);
                 Utils.WriteDwordBE(adxhdr, 28, 0);
-                offset = LOOP_START_OFFSET - 4;
                 Utils.WriteDwordBE(adxhdr, 32, LOOP_START_OFFSET);
                 Utils.WriteDwordBE(adxhdr, 36, size);
                 int loopEndOffset = GetLoopEndOffset(LOOP_START_OFFSET, size);
                 Utils.WriteDwordBE(adxhdr, 40, loopEndOffset);
-                Console.WriteLine($"loopStartOffset {LOOP_START_OFFSET}, loopEndOffset {loopEndOffset} ");
-
             }
             Utils.WriteDwordBE(adxhdr, 0, offset | 0x80000000);
 
